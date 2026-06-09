@@ -1,0 +1,326 @@
+/* app/settings/settings.module.css */
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.main {
+  padding-top: 72px;
+  padding-bottom: 120px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0 20px;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+  border: 1px solid var(--border);
+}
+
+.backBtn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Sections */
+.section {
+  padding: 28px 0;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.sectionDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+}
+
+/* Photo */
+.photoSection {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.photoPreview {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.photoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.photoFallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 36px;
+}
+
+.photoOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.photoSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.photoActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.uploadBtn {
+  font-size: 14px;
+  padding: 9px 18px;
+}
+
+.removeBtn {
+  font-size: 13px;
+  padding: 7px 16px;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.removeBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.photoHint {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Username input */
+.inputGroup {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  max-width: 360px;
+  transition: border-color 0.15s;
+}
+
+.inputGroup:focus-within {
+  border-color: var(--accent);
+}
+
+.inputPrefix {
+  padding: 0 12px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 16px;
+  background: var(--surface-hover);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--border);
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  padding: 0 14px;
+  height: 44px;
+}
+
+/* Appearance toggle */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+.toggleLabel {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.toggleDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.toggle {
+  width: 48px;
+  height: 26px;
+  border-radius: 13px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  background: var(--accent);
+  justify-content: flex-end;
+}
+
+.toggleOff {
+  background: var(--border);
+  justify-content: flex-start;
+}
+
+.toggleThumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  display: block;
+  transition: transform 0.2s;
+}
+
+/* Danger / Account */
+.dangerTitle {
+  color: var(--text);
+}
+
+.signOutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+}
+
+.signOutBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Save bar */
+.saveBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 15, 15, 0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  z-index: 50;
+}
+
+[data-theme="light"] .saveBar {
+  background: rgba(245, 245, 245, 0.92);
+}
+
+.saveMsg {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.saveMsgSuccess {
+  color: var(--success);
+}
+
+.saveMsgError {
+  color: #ef4444;
+}
+
+.saveBtn {
+  font-size: 15px;
+  padding: 10px 28px;
+  border-radius: var(--radius-sm);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

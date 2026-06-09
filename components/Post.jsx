@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, onSnapshot, arrayUnion, arrayRemove, collection, query, where, getDocs } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import styles from "./Post.module.css";
 
@@ -51,11 +51,27 @@ export default function Post({ post, currentUser }) {
   const likeCount = post.likes?.length ?? 0;
   const isOwn = post.authorId === currentUser.uid;
 
-  const [contextMenu, setContextMenu] = useState(null); // { x, y }
+  const [authorData, setAuthorData] = useState({ photo: post.authorPhoto, name: post.authorName });
+  const [contextMenu, setContextMenu] = useState(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(post.content);
   const [saving, setSaving] = useState(false);
   const menuRef = useRef(null);
+
+  // Real-time author profile (photo + username)
+  useEffect(() => {
+    if (!post.authorId) return;
+    const unsub = onSnapshot(doc(db, "users", post.authorId), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setAuthorData({
+          photo: data.photoURL || post.authorPhoto,
+          name: data.username || post.authorName,
+        });
+      }
+    });
+    return unsub;
+  }, [post.authorId]);
 
   const createdAt = post.createdAt?.toDate
     ? formatDistanceToNow(post.createdAt.toDate(), { addSuffix: true })
@@ -134,15 +150,15 @@ export default function Post({ post, currentUser }) {
       >
         <div className={styles.header}>
           <Link href={`/profile/${post.authorId}`} className={styles.avatar} onClick={(e) => e.stopPropagation()}>
-            {post.authorPhoto ? (
-              <Image src={post.authorPhoto} alt={post.authorName} width={40} height={40} className={styles.avatarImg} />
+            {authorData.photo ? (
+              <Image src={authorData.photo} alt={authorData.name} width={40} height={40} className={styles.avatarImg} unoptimized />
             ) : (
-              <div className={styles.avatarFallback}>{post.authorName?.[0] ?? "?"}</div>
+              <div className={styles.avatarFallback}>{authorData.name?.[0] ?? "?"}</div>
             )}
           </Link>
           <div className={styles.meta}>
             <Link href={`/profile/${post.authorId}`} className={styles.author} onClick={(e) => e.stopPropagation()}>
-              @{post.authorName}
+              @{authorData.name}
             </Link>
             <span className={styles.time}>{createdAt}{post.edited && " · edited"}</span>
           </div>
@@ -166,7 +182,14 @@ export default function Post({ post, currentUser }) {
             </div>
           </div>
         ) : (
-          <PostContent content={post.content} />
+          <>
+            {post.content && <PostContent content={post.content} />}
+            {post.imageUrl && (
+              <div className={styles.postImage} onClick={(e) => e.stopPropagation()}>
+                <img src={post.imageUrl} alt="Post image" className={styles.postImg} />
+              </div>
+            )}
+          </>
         )}
 
         <div className={styles.actions}>
