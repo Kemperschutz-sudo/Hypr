@@ -1,0 +1,155 @@
+/* app/page.module.css */
+
+.splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Landing / login screen */
+.landing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, var(--bg) 60%);
+}
+
+.landingInner {
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.logoSvg {
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.landingInner h1 {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+.landingInner p {
+  color: var(--text-muted);
+  font-size: 16px;
+  margin-bottom: 32px;
+}
+
+.loginBtn {
+  font-size: 15px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  gap: 8px;
+}
+
+/* Feed */
+.main {
+  padding-top: 72px;
+  padding-bottom: 48px;
+}
+
+.feed {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--text-faint);
+  font-size: 15px;
+}
+
+/* Username picker */
+.usernameForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  max-width: 320px;
+}
+
+.usernameInputRow {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: 100%;
+  gap: 4px;
+}
+
+.atSign {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.usernameInput {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.usernameInput::placeholder {
+  color: var(--text-faint);
+}
+
+.usernameError {
+  color: #ef4444;
+  font-size: 13px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+  margin-top: 8px;
+}
+
+.tab {
+  flex: 1;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.tabActive {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}

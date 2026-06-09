@@ -1,0 +1,77 @@
+/* components/CreatePost.module.css */
+
+.card {
+  display: flex;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 2px;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.textarea {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  width: 100%;
+  padding: 0;
+}
+
+.textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.charCount {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.postBtn {
+  padding: 7px 18px;
+  font-size: 14px;
+}
+
+.postBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -1,0 +1,223 @@
+/* components/Post.module.css */
+
+.post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: background 0.1s ease;
+  position: relative;
+}
+
+.post:hover {
+  background: var(--surface-hover);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.author {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  transition: color 0.1s;
+}
+
+.author:hover {
+  color: var(--accent);
+}
+
+.time {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.likeBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.likeBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.likeBtn.liked {
+  color: #ef4444;
+}
+
+.mention {
+  color: var(--accent);
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+
+.mention:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.mentionUnknown {
+  color: var(--text-muted);
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 18px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.post:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.deleteBtnConfirm {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 1 !important;
+}
+
+/* Context menu */
+.contextMenu {
+  position: fixed;
+  z-index: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  min-width: 180px;
+  animation: menuPop 0.1s ease;
+}
+
+@keyframes menuPop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.menuItem:hover {
+  background: var(--surface-hover);
+}
+
+.menuItemDanger {
+  color: #ef4444;
+}
+
+.menuItemDanger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.menuDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* Edit box */
+.editBox {
+  margin-bottom: 14px;
+}
+
+.editTextarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  resize: none;
+  margin-bottom: 8px;
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

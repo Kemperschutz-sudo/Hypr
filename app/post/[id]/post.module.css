@@ -1,0 +1,255 @@
+/* app/post/[id]/post.module.css */
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.main {
+  padding-top: 72px;
+  padding-bottom: 48px;
+}
+
+.backBtn {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 8px 0;
+  margin-bottom: 12px;
+  display: block;
+  transition: color 0.15s;
+}
+
+.backBtn:hover { color: var(--text); }
+
+/* Main post */
+.mainPost {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 2px;
+}
+
+.postHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.avatar { flex-shrink: 0; }
+
+.avatarImg {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.avatarFallbackSm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.author {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  transition: color 0.1s;
+}
+
+.author:hover { color: var(--accent); }
+
+.time {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.postContent {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 16px;
+}
+
+.postActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.likeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+
+.likeBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.likeBtn.liked { color: #ef4444; }
+
+.replyCount {
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.mention {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Reply box */
+.replyBox {
+  display: flex;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 2px;
+}
+
+.replyInput { flex: 1; }
+
+.textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.textarea::placeholder { color: var(--text-faint); }
+
+.replyFooter { display: flex; justify-content: flex-end; }
+
+.replyBtn { font-size: 13px; padding: 6px 16px; }
+
+/* Replies list */
+.replies {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.reply {
+  display: flex;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  transition: background 0.1s;
+}
+
+.reply:hover { background: var(--surface-hover); }
+
+.replyBody { flex: 1; min-width: 0; }
+
+.replyMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.replyAuthor {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  transition: color 0.1s;
+}
+
+.replyAuthor:hover { color: var(--accent); }
+
+.replyTime {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.replyContent {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.deleteReplyBtn {
+  margin-left: auto;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  opacity: 0;
+}
+
+.reply:hover .deleteReplyBtn { opacity: 1; }
+
+.deleteReplyBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.empty {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--text-faint);
+  font-size: 14px;
+}
