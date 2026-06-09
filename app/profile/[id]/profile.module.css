@@ -137,3 +137,27 @@
   color: var(--text-faint);
   font-size: 15px;
 }
+
+.bio {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 8px;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Verified badge */
+.name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.verifiedBadge {
+  flex-shrink: 0;
+}

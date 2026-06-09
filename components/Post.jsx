@@ -2,7 +2,6 @@
 // components/Post.jsx
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
@@ -45,20 +44,29 @@ function PostContent({ content }) {
   );
 }
 
+function VerifiedBadge() {
+  return (
+    <svg className={styles.verifiedBadge} width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#6366f1" />
+      <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Post({ post, currentUser }) {
   const router = useRouter();
   const liked = post.likes?.includes(currentUser.uid);
   const likeCount = post.likes?.length ?? 0;
   const isOwn = post.authorId === currentUser.uid;
 
-  const [authorData, setAuthorData] = useState({ photo: post.authorPhoto, name: post.authorName });
+  const [authorData, setAuthorData] = useState({ photo: post.authorPhoto, name: post.authorName, verified: false });
   const [contextMenu, setContextMenu] = useState(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(post.content);
   const [saving, setSaving] = useState(false);
   const menuRef = useRef(null);
 
-  // Real-time author profile (photo + username)
+  // Real-time author profile
   useEffect(() => {
     if (!post.authorId) return;
     const unsub = onSnapshot(doc(db, "users", post.authorId), (snap) => {
@@ -67,6 +75,7 @@ export default function Post({ post, currentUser }) {
         setAuthorData({
           photo: data.photoURL || post.authorPhoto,
           name: data.username || post.authorName,
+          verified: data.verified || false,
         });
       }
     });
@@ -77,12 +86,9 @@ export default function Post({ post, currentUser }) {
     ? formatDistanceToNow(post.createdAt.toDate(), { addSuffix: true })
     : "just now";
 
-  // Close context menu on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setContextMenu(null);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setContextMenu(null);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -97,11 +103,8 @@ export default function Post({ post, currentUser }) {
 
   const toggleLike = async () => {
     const ref = doc(db, "posts", post.id);
-    if (liked) {
-      await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-    } else {
-      await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
-    }
+    if (liked) await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+    else await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
   };
 
   const handleDelete = async () => {
@@ -151,34 +154,28 @@ export default function Post({ post, currentUser }) {
         <div className={styles.header}>
           <Link href={`/profile/${post.authorId}`} className={styles.avatar} onClick={(e) => e.stopPropagation()}>
             {authorData.photo ? (
-              <Image src={authorData.photo} alt={authorData.name} width={40} height={40} className={styles.avatarImg} unoptimized />
+              <img src={authorData.photo} alt={authorData.name} className={styles.avatarImg} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
             ) : (
-              <div className={styles.avatarFallback}>{authorData.name?.[0] ?? "?"}</div>
+              <div className={styles.avatarFallback}>{authorData.name?.[0]?.toUpperCase() ?? "?"}</div>
             )}
           </Link>
           <div className={styles.meta}>
-            <Link href={`/profile/${post.authorId}`} className={styles.author} onClick={(e) => e.stopPropagation()}>
-              @{authorData.name}
-            </Link>
+            <span className={styles.authorRow}>
+              <Link href={`/profile/${post.authorId}`} className={styles.author} onClick={(e) => e.stopPropagation()}>
+                @{authorData.name}
+              </Link>
+              {authorData.verified && <VerifiedBadge />}
+            </span>
             <span className={styles.time}>{createdAt}{post.edited && " · edited"}</span>
           </div>
         </div>
 
         {editing ? (
           <div className={styles.editBox} onClick={(e) => e.stopPropagation()}>
-            <textarea
-              className={styles.editTextarea}
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              rows={3}
-              maxLength={500}
-              autoFocus
-            />
+            <textarea className={styles.editTextarea} value={editText} onChange={(e) => setEditText(e.target.value)} rows={3} maxLength={500} autoFocus />
             <div className={styles.editActions}>
               <button className="btn btn-ghost" onClick={() => setEditing(false)} style={{ fontSize: 13, padding: "6px 14px" }}>Cancel</button>
-              <button className="btn btn-primary" onClick={saveEdit} disabled={saving} style={{ fontSize: 13, padding: "6px 14px" }}>
-                {saving ? "Saving…" : "Save"}
-              </button>
+              <button className="btn btn-primary" onClick={saveEdit} disabled={saving} style={{ fontSize: 13, padding: "6px 14px" }}>{saving ? "Saving…" : "Save"}</button>
             </div>
           </div>
         ) : (
@@ -206,14 +203,8 @@ export default function Post({ post, currentUser }) {
         </div>
       </div>
 
-      {/* Context menu */}
       {contextMenu && isOwn && (
-        <div
-          ref={menuRef}
-          className={styles.contextMenu}
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div ref={menuRef} className={styles.contextMenu} style={{ top: contextMenu.y, left: contextMenu.x }} onClick={(e) => e.stopPropagation()}>
           <button className={styles.menuItem} onClick={handleEdit}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

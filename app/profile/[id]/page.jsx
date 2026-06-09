@@ -34,7 +34,7 @@ export default function ProfilePage() {
   const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (u) => { setCurrentUser(u); if (!u) window.location.href = "/"; });
+    return onAuthStateChanged(auth, (u) => setCurrentUser(u));
   }, []);
 
   // Fetch posts
@@ -49,20 +49,32 @@ export default function ProfilePage() {
     const unsub = onSnapshot(q, (snap) => {
       const userPosts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPosts(userPosts);
-      if (userPosts.length > 0) {
-        setProfileData({
-          name: userPosts[0].authorName,
-          photo: userPosts[0].authorPhoto,
-        });
+      setLoading(false);
+    }, () => {
+      setLoading(false);
+    });
+    return unsub;
+  }, [id, currentUser]);
+
+  // Load profile data from users collection (real-time photo + username)
+  useEffect(() => {
+    if (!id) return;
+    const unsub = onSnapshot(doc(db, "users", id), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setProfileData((prev) => ({
+          name: data.username || prev?.name || "Unknown user",
+          photo: data.photoURL || prev?.photo || null,
+          bio: data.bio || "",
+          verified: data.verified || false,
+        }));
       } else if (currentUser?.uid === id) {
         setProfileData({
           name: currentUser.displayName,
           photo: currentUser.photoURL,
+          bio: "",
         });
       }
-      setLoading(false);
-    }, () => {
-      setLoading(false);
     });
     return unsub;
   }, [id, currentUser]);
@@ -141,7 +153,14 @@ export default function ProfilePage() {
               <div className={styles.profileInfo}>
                 <h1 className={styles.name}>
                   {profileData?.name ?? "Unknown user"}
+                  {profileData?.verified && (
+                    <svg className={styles.verifiedBadge} width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="12" fill="#6366f1" />
+                      <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
                 </h1>
+                {profileData?.bio && <p className={styles.bio}>{profileData.bio}</p>}
                 <div className={styles.stats}>
                   <span><strong>{posts.length}</strong> post{posts.length !== 1 ? "s" : ""}</span>
                   <span><strong>{followers.length}</strong> follower{followers.length !== 1 ? "s" : ""}</span>

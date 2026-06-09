@@ -3,7 +3,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -17,10 +16,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Fields
   const [username, setUsername] = useState("");
   const [usernameInput, setUsernameInput] = useState("");
+  const [bio, setBio] = useState("");
+  const [bioInput, setBioInput] = useState("");
   const [darkMode, setDarkMode] = useState(true);
   const [customPhoto, setCustomPhoto] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -36,6 +35,7 @@ export default function SettingsPage() {
       if (snap.exists()) {
         const data = snap.data();
         if (data.username) { setUsername(data.username); setUsernameInput(data.username); }
+        if (data.bio) { setBio(data.bio); setBioInput(data.bio); }
         if (data.photoURL) setCustomPhoto(data.photoURL);
         if (data.darkMode !== undefined) {
           setDarkMode(data.darkMode);
@@ -76,29 +76,22 @@ export default function SettingsPage() {
     if (!currentUser || saving) return;
     setSaving(true);
     setSaveMsg("");
-
     try {
       const trimmed = usernameInput.trim().toLowerCase().replace(/\s+/g, "_");
-
       if (trimmed !== username) {
         if (trimmed.length < 3) { setSaveMsg("Username must be at least 3 characters"); setSaving(false); return; }
         if (!/^[a-z0-9_]+$/.test(trimmed)) { setSaveMsg("Only letters, numbers, and underscores"); setSaving(false); return; }
         const taken = await getDoc(doc(db, "usernames", trimmed));
-        if (taken.exists() && taken.data().uid !== currentUser.uid) {
-          setSaveMsg("Username already taken");
-          setSaving(false);
-          return;
-        }
+        if (taken.exists() && taken.data().uid !== currentUser.uid) { setSaveMsg("Username already taken"); setSaving(false); return; }
         await setDoc(doc(db, "usernames", trimmed), { uid: currentUser.uid });
         setUsername(trimmed);
       }
-
       await setDoc(doc(db, "users", currentUser.uid), {
         username: trimmed || username,
         darkMode,
+        bio: bioInput.trim(),
         ...(customPhoto ? { photoURL: customPhoto } : {}),
       }, { merge: true });
-
       setSaveMsg("Saved!");
       setTimeout(() => setSaveMsg(""), 2500);
     } catch (err) {
@@ -109,9 +102,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
-    return <div className={styles.loading}><div className={styles.spinner} /></div>;
-  }
+  if (loading) return <div className={styles.loading}><div className={styles.spinner} /></div>;
 
   return (
     <>
@@ -128,32 +119,23 @@ export default function SettingsPage() {
             <h1 className={styles.title}>Settings</h1>
           </div>
 
-          {/* Profile picture */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Profile Picture</h2>
             <div className={styles.photoSection}>
               <div className={styles.photoPreview}>
                 {currentPhoto ? (
-                  <Image src={currentPhoto} alt="Profile" width={96} height={96} className={styles.photoImg} unoptimized />
+                  <img src={currentPhoto} alt="Profile" className={styles.photoImg} />
                 ) : (
-                  <div className={styles.photoFallback}>
-                    {(usernameInput || username)?.[0]?.toUpperCase() ?? "?"}
-                  </div>
+                  <div className={styles.photoFallback}>{(usernameInput || username)?.[0]?.toUpperCase() ?? "?"}</div>
                 )}
-                {uploadingPhoto && (
-                  <div className={styles.photoOverlay}>
-                    <div className={styles.photoSpinner} />
-                  </div>
-                )}
+                {uploadingPhoto && <div className={styles.photoOverlay}><div className={styles.photoSpinner} /></div>}
               </div>
               <div className={styles.photoActions}>
                 <button className={`btn btn-primary ${styles.uploadBtn}`} onClick={() => photoRef.current?.click()} disabled={uploadingPhoto}>
                   {uploadingPhoto ? "Uploading…" : "Upload new photo"}
                 </button>
                 {customPhoto && (
-                  <button className={`btn btn-ghost ${styles.removeBtn}`} onClick={() => setCustomPhoto(null)}>
-                    Remove photo
-                  </button>
+                  <button className={`btn btn-ghost ${styles.removeBtn}`} onClick={() => setCustomPhoto(null)}>Remove photo</button>
                 )}
                 <p className={styles.photoHint}>JPG, PNG or GIF. Recommended 400×400px.</p>
               </div>
@@ -163,26 +145,33 @@ export default function SettingsPage() {
 
           <div className={styles.divider} />
 
-          {/* Username */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Username</h2>
-            <p className={styles.sectionDesc}>This is how people find and mention you. Changing it won't update your old posts.</p>
+            <p className={styles.sectionDesc}>This is how people find and mention you.</p>
             <div className={styles.inputGroup}>
               <span className={styles.inputPrefix}>@</span>
-              <input
-                className={styles.input}
-                type="text"
-                value={usernameInput}
-                onChange={(e) => setUsernameInput(e.target.value)}
-                maxLength={30}
-                placeholder="username"
-              />
+              <input className={styles.input} type="text" value={usernameInput} onChange={(e) => setUsernameInput(e.target.value)} maxLength={30} placeholder="username" />
             </div>
           </section>
 
           <div className={styles.divider} />
 
-          {/* Appearance */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Bio</h2>
+            <p className={styles.sectionDesc}>Tell people a little about yourself. Max 160 characters.</p>
+            <textarea
+              className={styles.bioInput}
+              value={bioInput}
+              onChange={(e) => setBioInput(e.target.value)}
+              maxLength={160}
+              rows={3}
+              placeholder="Write a short bio…"
+            />
+            <p className={styles.bioCount}>{bioInput.length}/160</p>
+          </section>
+
+          <div className={styles.divider} />
+
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Appearance</h2>
             <div className={styles.toggleRow}>
@@ -190,10 +179,7 @@ export default function SettingsPage() {
                 <p className={styles.toggleLabel}>{darkMode ? "Dark mode" : "Light mode"}</p>
                 <p className={styles.toggleDesc}>Choose your preferred color scheme</p>
               </div>
-              <button
-                className={`${styles.toggle} ${darkMode ? styles.toggleOn : styles.toggleOff}`}
-                onClick={handleToggleDarkMode}
-              >
+              <button className={`${styles.toggle} ${darkMode ? styles.toggleOn : styles.toggleOff}`} onClick={handleToggleDarkMode}>
                 <span className={styles.toggleThumb} />
               </button>
             </div>
@@ -201,9 +187,8 @@ export default function SettingsPage() {
 
           <div className={styles.divider} />
 
-          {/* Danger zone */}
           <section className={styles.section}>
-            <h2 className={`${styles.sectionTitle} ${styles.dangerTitle}`}>Account</h2>
+            <h2 className={styles.sectionTitle}>Account</h2>
             <button className={`btn ${styles.signOutBtn}`} onClick={() => signOut(auth).then(() => router.push("/"))}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -214,7 +199,6 @@ export default function SettingsPage() {
             </button>
           </section>
 
-          {/* Save bar */}
           <div className={styles.saveBar}>
             {saveMsg && <span className={`${styles.saveMsg} ${saveMsg === "Saved!" ? styles.saveMsgSuccess : styles.saveMsgError}`}>{saveMsg}</span>}
             <button className={`btn btn-primary ${styles.saveBtn}`} onClick={handleSave} disabled={saving}>

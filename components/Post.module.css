@@ -25,8 +25,12 @@
 }
 
 .avatarImg {
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
+  display: block;
 }
 
 .avatarFallback {
@@ -222,17 +226,15 @@
   gap: 8px;
 }
 
-/* Post image */
-.postImage {
-  margin-bottom: 12px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+/* Verified badge */
+.authorRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.postImg {
-  width: 100%;
-  max-height: 400px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  display: block;
+.verifiedBadge {
+  flex-shrink: 0;
+  position: relative;
+  top: 1px;
 }
