@@ -3,13 +3,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import styles from "./Navbar.module.css";
 
 const OWNER_UID = "Gj0LKhJoonOJGHYyi8SwOqocZX42";
 
 export default function Navbar({ user, username, onLogout }) {
+  const router = useRouter();
   const [photo, setPhoto] = useState(null);
   const [displayName, setDisplayName] = useState(username || user?.displayName || "");
   const [unreadCount, setUnreadCount] = useState(0);
@@ -40,6 +43,11 @@ export default function Navbar({ user, username, onLogout }) {
 
   const isOwner = user?.uid === OWNER_UID;
 
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push("/");
+  };
+
   return (
     <nav className={styles.nav}>
       <div className={`container ${styles.inner}`}>
@@ -52,14 +60,12 @@ export default function Navbar({ user, username, onLogout }) {
         </Link>
 
         <div className={styles.right}>
-          {/* Search */}
           <Link href="/search" className={`btn btn-ghost ${styles.iconBtn}`} title="Search">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
           </Link>
 
-          {/* Notifications */}
           <Link href="/notifications" className={`btn btn-ghost ${styles.iconBtn} ${styles.notifBtn}`} title="Notifications">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -70,7 +76,6 @@ export default function Navbar({ user, username, onLogout }) {
             )}
           </Link>
 
-          {/* Admin button — owner only */}
           {isOwner && (
             <Link href="/admin" className={`btn btn-ghost ${styles.iconBtn}`} title="Admin Panel">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -79,7 +84,6 @@ export default function Navbar({ user, username, onLogout }) {
             </Link>
           )}
 
-          {/* Avatar */}
           <Link href={`/profile/${user?.uid}`} className={styles.avatar}>
             {photo ? (
               <img src={photo} alt={displayName} className={styles.avatarImg} />
@@ -88,7 +92,6 @@ export default function Navbar({ user, username, onLogout }) {
             )}
           </Link>
 
-          {/* Settings */}
           <Link href="/settings" className={`btn btn-ghost ${styles.iconBtn}`} title="Settings">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
@@ -96,7 +99,7 @@ export default function Navbar({ user, username, onLogout }) {
             </svg>
           </Link>
 
-          <button className={`btn btn-ghost ${styles.logoutBtn}`} onClick={onLogout}>Sign out</button>
+          <button className={`btn btn-ghost ${styles.logoutBtn}`} onClick={handleSignOut}>Sign out</button>
         </div>
       </div>
     </nav>

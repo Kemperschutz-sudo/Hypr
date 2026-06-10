@@ -28,20 +28,68 @@ function PostContent({ content }) {
     resolve();
   }, [content]);
 
-  const parts = content.split(/(@[a-z0-9_]+)/gi);
+  // Split on mentions AND hashtags
+  const parts = content.split(/(#[a-z0-9_]+|@[a-z0-9_]+)/gi);
   return (
-    <p className={styles.content}>
+    <p className={styles.content} data-selectable>
       {parts.map((part, i) => {
-        const match = part.match(/^@([a-z0-9_]+)$/i);
-        if (match) {
-          const name = match[1].toLowerCase();
+        const mentionMatch = part.match(/^@([a-z0-9_]+)$/i);
+        const hashtagMatch = part.match(/^#([a-z0-9_]+)$/i);
+        if (mentionMatch) {
+          const name = mentionMatch[1].toLowerCase();
           const uid = mentionMap[name];
-          if (uid) return <Link key={i} href={`/profile/${uid}`} className={styles.mention}>@{match[1]}</Link>;
-          return <span key={i} className={styles.mentionUnknown}>@{match[1]}</span>;
+          if (uid) return <Link key={i} href={`/profile/${uid}`} className={styles.mention} onClick={(e) => e.stopPropagation()}>@{mentionMatch[1]}</Link>;
+          return <span key={i} className={styles.mentionUnknown}>@{mentionMatch[1]}</span>;
+        }
+        if (hashtagMatch) {
+          return <Link key={i} href={`/hashtag?tag=${hashtagMatch[1].toLowerCase()}`} className={styles.hashtag} onClick={(e) => e.stopPropagation()}>#{hashtagMatch[1]}</Link>;
         }
         return part;
       })}
     </p>
+  );
+}
+
+function PollDisplay({ poll, postId, currentUser }) {
+  const totalVotes = poll.options.reduce((acc, o) => acc + (o.votes?.length || 0), 0);
+  const userVoted = poll.options.findIndex(o => o.votes?.includes(currentUser?.uid));
+  const ended = poll.endsAt ? new Date(poll.endsAt) < new Date() : false;
+
+  const handleVote = async (e, optionIndex) => {
+    e.stopPropagation();
+    if (userVoted !== -1 || ended || !currentUser) return;
+    const ref = doc(db, "posts", postId);
+    const newOptions = poll.options.map((o, i) => ({
+      ...o,
+      votes: i === optionIndex ? [...(o.votes || []), currentUser.uid] : (o.votes || []),
+    }));
+    await updateDoc(ref, { "poll.options": newOptions });
+  };
+
+  return (
+    <div className={styles.poll} onClick={(e) => e.stopPropagation()}>
+      {poll.options.map((option, i) => {
+        const votes = option.votes?.length || 0;
+        const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+        const isMyVote = userVoted === i;
+        const showResults = userVoted !== -1 || ended;
+        return (
+          <button
+            key={i}
+            className={`${styles.pollOption} ${isMyVote ? styles.pollOptionVoted : ""} ${showResults ? styles.pollOptionResult : ""}`}
+            onClick={(e) => handleVote(e, i)}
+            disabled={userVoted !== -1 || ended}
+          >
+            {showResults && <div className={styles.pollBar} style={{ width: `${pct}%` }} />}
+            <span className={styles.pollOptionText}>{option.text}</span>
+            {showResults && <span className={styles.pollPct}>{pct}%</span>}
+          </button>
+        );
+      })}
+      <p className={styles.pollMeta}>
+        {totalVotes} vote{totalVotes !== 1 ? "s" : ""} · {ended ? "Poll ended" : `Ends ${formatDistanceToNow(new Date(poll.endsAt), { addSuffix: true })}`}
+      </p>
+    </div>
   );
 }
 
@@ -51,14 +99,13 @@ export default function Post({ post, currentUser }) {
   const likeCount = post.likes?.length ?? 0;
   const isOwn = post.authorId === currentUser.uid;
 
-  const [authorData, setAuthorData] = useState({ photo: post.authorPhoto, name: post.authorName, verified: false });
+  const [authorData, setAuthorData] = useState({ photo: post.authorPhoto, name: post.authorName, verified: false, devVerified: false });
   const [contextMenu, setContextMenu] = useState(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(post.content);
   const [saving, setSaving] = useState(false);
   const menuRef = useRef(null);
 
-  // Real-time author profile
   useEffect(() => {
     if (!post.authorId) return;
     const unsub = onSnapshot(doc(db, "users", post.authorId), (snap) => {
@@ -68,6 +115,7 @@ export default function Post({ post, currentUser }) {
           photo: data.photoURL || post.authorPhoto,
           name: data.username || post.authorName,
           verified: data.verified || false,
+          devVerified: data.devVerified || false,
         });
       }
     });
@@ -151,6 +199,7 @@ export default function Post({ post, currentUser }) {
         className={styles.post}
         onClick={() => router.push(`/post/${post.id}`)}
         onContextMenu={handleContextMenu}
+        data-allow-context
         style={{ cursor: "pointer" }}
       >
         <div className={styles.header}>
@@ -170,6 +219,12 @@ export default function Post({ post, currentUser }) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={styles.verifiedBadge}>
                   <circle cx="12" cy="12" r="12" fill="#6366f1" />
                   <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+              {authorData.devVerified && (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={styles.devBadge} title="Dev Verified">
+                  <circle cx="12" cy="12" r="12" fill="#eab308" />
+                  <path d="M7 9l-3 3 3 3M17 9l3 3-3 3M14 6l-4 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </span>
@@ -197,6 +252,7 @@ export default function Post({ post, currentUser }) {
         ) : (
           <>
             {post.content && <PostContent content={post.content} />}
+            {post.poll && <PollDisplay poll={post.poll} postId={post.id} currentUser={currentUser} />}
             {post.imageUrl && (
               <div className={styles.postImage} onClick={(e) => e.stopPropagation()}>
                 <img src={post.imageUrl} alt="Post image" className={styles.postImg} />
@@ -215,6 +271,12 @@ export default function Post({ post, currentUser }) {
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
             <span>{likeCount > 0 ? likeCount : ""}</span>
+          </button>
+          <button className={styles.replyCountBtn} onClick={() => router.push(`/post/${post.id}`)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>{post.replyCount > 0 ? post.replyCount : ""}</span>
           </button>
         </div>
       </div>

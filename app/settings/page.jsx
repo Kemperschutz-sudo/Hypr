@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
 import styles from "./settings.module.css";
 
@@ -21,6 +21,7 @@ export default function SettingsPage() {
   const [bio, setBio] = useState("");
   const [bioInput, setBioInput] = useState("");
   const [darkMode, setDarkMode] = useState(true);
+  const [showOnline, setShowOnline] = useState(true);
   const [customPhoto, setCustomPhoto] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -41,6 +42,7 @@ export default function SettingsPage() {
           setDarkMode(data.darkMode);
           document.documentElement.setAttribute("data-theme", data.darkMode ? "dark" : "light");
         }
+        if (data.showOnline !== undefined) setShowOnline(data.showOnline);
       }
       setLoading(false);
     });
@@ -89,7 +91,10 @@ export default function SettingsPage() {
       await setDoc(doc(db, "users", currentUser.uid), {
         username: trimmed || username,
         darkMode,
+        showOnline,
+        online: showOnline,
         bio: bioInput.trim(),
+        lastSeen: serverTimestamp(),
         ...(customPhoto ? { photoURL: customPhoto } : {}),
       }, { merge: true });
       setSaveMsg("Saved!");
@@ -180,6 +185,21 @@ export default function SettingsPage() {
                 <p className={styles.toggleDesc}>Choose your preferred color scheme</p>
               </div>
               <button className={`${styles.toggle} ${darkMode ? styles.toggleOn : styles.toggleOff}`} onClick={handleToggleDarkMode}>
+                <span className={styles.toggleThumb} />
+              </button>
+            </div>
+          </section>
+
+          <div className={styles.divider} />
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Privacy</h2>
+            <div className={styles.toggleRow}>
+              <div>
+                <p className={styles.toggleLabel}>Online status</p>
+                <p className={styles.toggleDesc}>Show others when you're active on Hypr</p>
+              </div>
+              <button className={`${styles.toggle} ${showOnline ? styles.toggleOn : styles.toggleOff}`} onClick={() => setShowOnline(!showOnline)}>
                 <span className={styles.toggleThumb} />
               </button>
             </div>

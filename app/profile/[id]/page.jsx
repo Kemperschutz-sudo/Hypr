@@ -57,11 +57,14 @@ export default function ProfilePage() {
           photo: data.photoURL || prev?.photo || null,
           bio: data.bio || "",
           verified: data.verified || false,
+          devVerified: data.devVerified || false,
+          online: data.online || false,
+          showOnline: data.showOnline !== false,
         }));
         setFollowers(data.followers ?? []);
         setFollowing(data.following ?? []);
       } else if (currentUser?.uid === id) {
-        setProfileData({ name: currentUser.displayName, photo: currentUser.photoURL, bio: "", verified: false });
+        setProfileData({ name: currentUser.displayName, photo: currentUser.photoURL, bio: "", verified: false, devVerified: false });
       }
     });
     return unsub;
@@ -76,14 +79,12 @@ export default function ProfilePage() {
     try {
       const profileRef = doc(db, "users", id);
       const myRef = doc(db, "users", currentUser.uid);
-      await setDoc(profileRef, { followers: [], following: [] }, { merge: true });
-      await setDoc(myRef, { followers: [], following: [] }, { merge: true });
       if (isFollowing) {
         await updateDoc(profileRef, { followers: arrayRemove(currentUser.uid) });
         await updateDoc(myRef, { following: arrayRemove(id) });
       } else {
-        await updateDoc(profileRef, { followers: arrayUnion(currentUser.uid) });
-        await updateDoc(myRef, { following: arrayUnion(id) });
+        await setDoc(profileRef, { followers: arrayUnion(currentUser.uid) }, { merge: true });
+        await setDoc(myRef, { following: arrayUnion(id) }, { merge: true });
         sendNotification({ toUid: id, fromUid: currentUser.uid, type: "follow" });
       }
     } catch (err) {
@@ -102,11 +103,16 @@ export default function ProfilePage() {
         <div className="container">
           <div className={styles.profileCard}>
             <div className={styles.profileTop}>
-              {profileData?.photo ? (
-                <img src={profileData.photo} alt={profileData?.name ?? "User"} className={styles.avatar} />
-              ) : (
-                <div className={styles.avatarFallback}>{profileData?.name?.[0]?.toUpperCase() ?? "?"}</div>
-              )}
+              <div className={styles.avatarWrapper}>
+                {profileData?.photo ? (
+                  <img src={profileData.photo} alt={profileData?.name ?? "User"} className={styles.avatar} />
+                ) : (
+                  <div className={styles.avatarFallback}>{profileData?.name?.[0]?.toUpperCase() ?? "?"}</div>
+                )}
+                {profileData?.online && profileData?.showOnline !== false && (
+                  <div className={styles.onlineDot} title="Online" />
+                )}
+              </div>
               <div className={styles.profileInfo}>
                 <h1 className={styles.name}>
                   {profileData?.name ?? "Unknown user"}
@@ -114,6 +120,12 @@ export default function ProfilePage() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={styles.verifiedBadge}>
                       <circle cx="12" cy="12" r="12" fill="#6366f1" />
                       <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                  {profileData?.devVerified && (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={styles.devBadge} title="Dev Verified">
+                      <circle cx="12" cy="12" r="12" fill="#eab308" />
+                      <path d="M7 9l-3 3 3 3M17 9l3 3-3 3M14 6l-4 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                 </h1>

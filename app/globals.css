@@ -46,6 +46,14 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   transition: background 0.2s ease, color 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection inside posts and inputs */
+input, textarea, [data-selectable], .post-content {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 a {

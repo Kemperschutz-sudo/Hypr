@@ -22,6 +22,7 @@
 
 .avatar {
   flex-shrink: 0;
+  display: block;
 }
 
 .avatarImg {
@@ -48,11 +49,11 @@
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .authorRow {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 4px;
 }
@@ -62,6 +63,7 @@
   font-size: 14px;
   color: var(--text);
   transition: color 0.1s;
+  line-height: 1.2;
 }
 
 .author:hover {
@@ -70,8 +72,12 @@
 
 .verifiedBadge {
   flex-shrink: 0;
-  position: relative;
-  top: 1px;
+  display: block;
+}
+
+.devBadge {
+  flex-shrink: 0;
+  display: block;
 }
 
 .time {
@@ -86,6 +92,21 @@
   white-space: pre-wrap;
   word-break: break-word;
   margin-bottom: 14px;
+}
+
+.postImage {
+  margin-bottom: 12px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.postImg {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  display: block;
 }
 
 .actions {
@@ -204,17 +225,103 @@
   gap: 8px;
 }
 
-.postImage {
-  margin-bottom: 12px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  background: var(--bg);
+/* Hashtags */
+.hashtag {
+  color: var(--accent);
+  font-weight: 500;
+  transition: opacity 0.15s;
 }
 
-.postImg {
+.hashtag:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Reply count button */
+.replyCountBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.replyCountBtn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent);
+}
+
+/* Poll */
+.poll {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pollOption {
+  position: relative;
   width: 100%;
-  max-height: 500px;
-  object-fit: contain;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  display: block;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.pollOption:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.pollOption:disabled {
+  cursor: default;
+}
+
+.pollOptionVoted {
+  border-color: var(--accent) !important;
+  color: var(--accent);
+}
+
+.pollBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(99, 102, 241, 0.12);
+  transition: width 0.4s ease;
+  border-radius: var(--radius-sm);
+}
+
+.pollOptionText {
+  position: relative;
+  z-index: 1;
+}
+
+.pollPct {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  z-index: 1;
+}
+
+.pollMeta {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 2px;
 }
