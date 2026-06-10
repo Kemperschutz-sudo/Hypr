@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # ◈ Hypr
+=======
+# Hypr
+>>>>>>> d67294c88d3d23e9c6834fd1a3090ebaa001ac6a
 
 A social media platform built with Next.js and Firebase.
 
