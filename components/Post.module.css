@@ -25,11 +25,10 @@
 }
 
 .avatarImg {
-  width: 40px !important;
-  height: 40px !important;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
   display: block;
 }
 
@@ -52,6 +51,12 @@
   gap: 1px;
 }
 
+.authorRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .author {
   font-weight: 600;
   font-size: 14px;
@@ -61,6 +66,12 @@
 
 .author:hover {
   color: var(--accent);
+}
+
+.verifiedBadge {
+  flex-shrink: 0;
+  position: relative;
+  top: 1px;
 }
 
 .time {
@@ -121,38 +132,6 @@
   color: var(--text-muted);
 }
 
-.deleteBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  color: var(--text-faint);
-  font-size: 18px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: all 0.15s;
-  flex-shrink: 0;
-  opacity: 0;
-}
-
-.post:hover .deleteBtn {
-  opacity: 1;
-}
-
-.deleteBtn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.deleteBtnConfirm {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  font-size: 13px;
-  font-weight: 600;
-  opacity: 1 !important;
-}
-
-/* Context menu */
 .contextMenu {
   position: fixed;
   z-index: 500;
@@ -202,7 +181,6 @@
   margin: 4px 0;
 }
 
-/* Edit box */
 .editBox {
   margin-bottom: 14px;
 }
@@ -226,15 +204,17 @@
   gap: 8px;
 }
 
-/* Verified badge */
-.authorRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.postImage {
+  margin-bottom: 12px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg);
 }
 
-.verifiedBadge {
-  flex-shrink: 0;
-  position: relative;
-  top: 1px;
+.postImg {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  display: block;
 }

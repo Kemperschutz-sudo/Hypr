@@ -6,7 +6,7 @@ import { auth, db, googleProvider } from "@/lib/firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import {
   collection, query, orderBy, onSnapshot, limit,
-  doc, getDoc, setDoc,
+  doc, getDoc, setDoc, getDocs,
 } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
 import CreatePost from "@/components/CreatePost";
@@ -26,11 +26,52 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("For You");
   const [loading, setLoading] = useState(true);
 
+  const [banned, setBanned] = useState(null);
+  const [userCount, setUserCount] = useState(null);
+
+  // Load user count for landing page
+  useEffect(() => {
+    const loadCount = async () => {
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        setUserCount(snap.size);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadCount();
+  }, []);
+
   // Auth state listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
+        // Check if banned
+        const banSnap = await getDoc(doc(db, "bans", u.uid));
+        if (banSnap.exists()) {
+          const banData = banSnap.data();
+          // Check if temp ban has expired
+          if (!banData.permanent && banData.banUntil) {
+            const banUntil = new Date(banData.banUntil);
+            if (banUntil < new Date()) {
+              // Ban expired — remove it
+              await signOut(auth);
+              setBanned(null);
+            } else {
+              setBanned(banData);
+              setLoading(false);
+              return;
+            }
+          } else {
+            setBanned(banData);
+            setLoading(false);
+            return;
+          }
+        } else {
+          setBanned(null);
+        }
+
         const snap = await getDoc(doc(db, "users", u.uid));
         if (snap.exists() && snap.data().username) {
           setUsername(snap.data().username);
@@ -39,6 +80,7 @@ export default function Home() {
         }
       } else {
         setUsername(null);
+        setBanned(null);
       }
       setLoading(false);
     });
@@ -110,15 +152,51 @@ export default function Home() {
     return <div className={styles.splash}><div className={styles.spinner} /></div>;
   }
 
+  // Banned screen
+  if (banned) {
+    return (
+      <div className={styles.landing}>
+        <div className={styles.landingInner}>
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+          </svg>
+          <h1 style={{ color: "#ef4444" }}>You're banned</h1>
+          <p style={{ color: "var(--text-muted)", maxWidth: 360, textAlign: "center", marginTop: 8 }}>
+            {banned.message || "You have been banned from Hypr."}
+          </p>
+          {banned.banUntil && (
+            <p style={{ color: "var(--text-faint)", fontSize: 13, marginTop: 8 }}>
+              Ban expires: {new Date(banned.banUntil).toLocaleDateString()}
+            </p>
+          )}
+          {banned.permanent && (
+            <p style={{ color: "var(--text-faint)", fontSize: 13, marginTop: 8 }}>This ban is permanent.</p>
+          )}
+          <button className={`btn btn-ghost`} style={{ marginTop: 24 }} onClick={() => signOut(auth)}>
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className={styles.landing}>
         <div className={styles.landingInner}>
           <svg className={styles.logoSvg} width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="3" transform="rotate(45 12 12)" />
-              <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-            </svg>
-          <p>Share moments. Follow people. Join the conversation.</p>
+            <rect x="3" y="3" width="18" height="18" rx="3" transform="rotate(45 12 12)" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+          </svg>
+          <h1 className={styles.landingTitle}>Hypr</h1>
+          {userCount !== null && (
+            <div className={styles.userCountBadge}>
+              <div className={styles.userCountDot} />
+              {userCount.toLocaleString()} {userCount === 1 ? "member" : "members"} joined
+            </div>
+          )}
+          <p className={styles.landingDesc}>Share moments. Follow people. Join the conversation.</p>
           <button className={`btn btn-primary ${styles.loginBtn}`} onClick={handleLogin}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

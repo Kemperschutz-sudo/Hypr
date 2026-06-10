@@ -1,0 +1,19 @@
+.main { padding-top: 72px; padding-bottom: 48px; min-height: 100vh; }
+.title { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; padding: 24px 0 20px; }
+.searchBox { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; margin-bottom: 16px; transition: border-color 0.15s; }
+.searchBox:focus-within { border-color: var(--accent); }
+.searchIcon { color: var(--text-faint); flex-shrink: 0; }
+.searchInput { flex: 1; background: transparent; border: none; color: var(--text); font-size: 15px; }
+.searchInput::placeholder { color: var(--text-faint); }
+.searchBtn { font-size: 13px; padding: 6px 16px; flex-shrink: 0; }
+.results { display: flex; flex-direction: column; gap: 1px; }
+.empty { text-align: center; padding: 48px 0; color: var(--text-faint); font-size: 15px; }
+.userCard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; transition: background 0.1s; text-decoration: none; }
+.userCard:hover { background: var(--surface-hover); }
+.avatar { flex-shrink: 0; }
+.avatarImg { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: block; }
+.avatarFallback { width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+.userInfo { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.userUsername { font-weight: 600; font-size: 15px; color: var(--text); display: flex; align-items: center; }
+.userBio { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arrow { color: var(--text-faint); flex-shrink: 0; }

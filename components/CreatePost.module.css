@@ -12,6 +12,8 @@
 
 .avatar {
   flex-shrink: 0;
+  width: 40px;
+  height: 40px;
 }
 
 .avatarImg {
@@ -19,7 +21,7 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
+  display: block;
 }
 
 .avatarFallback {
@@ -79,16 +81,53 @@
   cursor: not-allowed;
 }
 
-.imageBtn {
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.gifBtn {
   background: transparent;
   color: var(--text-muted);
-  border: none;
-  padding: 4px 6px;
+  border: 1px solid var(--border);
+  padding: 3px 7px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s;
   display: flex;
   align-items: center;
+}
+
+.gifBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.gifBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gifLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.imageBtn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 5px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .imageBtn:hover {
@@ -99,4 +138,10 @@
 .imageBtn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }

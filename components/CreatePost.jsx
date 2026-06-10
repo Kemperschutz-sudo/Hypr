@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, onSnapshot } from "firebase/firestore";
+import GifPicker from "./GifPicker";
 import styles from "./CreatePost.module.css";
 
 const CLOUD_NAME = "drxpnwzsm";
@@ -16,15 +17,15 @@ export default function CreatePost({ user, username }) {
   const [uploading, setUploading] = useState(false);
   const [posting, setPosting] = useState(false);
   const [customPhoto, setCustomPhoto] = useState(null);
+  const [showGifs, setShowGifs] = useState(false);
   const fileRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const gifBtnRef = useRef(null);
 
-  // Load custom photo from Firestore in real-time
   useEffect(() => {
     if (!user?.uid) return;
     const unsub = onSnapshot(doc(db, "users", user.uid), (snap) => {
-      if (snap.exists() && snap.data().photoURL) {
-        setCustomPhoto(snap.data().photoURL);
-      }
+      if (snap.exists() && snap.data().photoURL) setCustomPhoto(snap.data().photoURL);
     });
     return unsub;
   }, [user?.uid]);
@@ -42,13 +43,19 @@ export default function CreatePost({ user, username }) {
       formData.append("upload_preset", UPLOAD_PRESET);
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
       const data = await res.json();
-      setImage({ url: data.secure_url, publicId: data.public_id });
+      setImage({ url: data.secure_url });
     } catch (err) {
       console.error("Image upload failed:", err);
       setImagePreview(null);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleGifSelect = (gifUrl) => {
+    setImage({ url: gifUrl });
+    setImagePreview(gifUrl);
+    setShowGifs(false);
   };
 
   const removeImage = () => {
@@ -82,12 +89,8 @@ export default function CreatePost({ user, username }) {
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
-  };
-
   return (
-    <div className={styles.card}>
+    <div className={styles.card} ref={wrapperRef}>
       <div className={styles.avatar}>
         {currentPhoto ? (
           <img src={currentPhoto} alt={username || user.displayName} className={styles.avatarImg} />
@@ -99,12 +102,13 @@ export default function CreatePost({ user, username }) {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e) => e.key === "Enter" && (e.metaKey || e.ctrlKey) && handleSubmit()}
           placeholder="What's on your mind?"
           rows={3}
           className={styles.textarea}
           maxLength={500}
         />
+
         {imagePreview && (
           <div className={styles.imagePreview}>
             <img src={imagePreview} alt="Preview" className={styles.previewImg} />
@@ -118,19 +122,29 @@ export default function CreatePost({ user, username }) {
             )}
           </div>
         )}
+
         <div className={styles.footer}>
-          <button className={styles.imageBtn} onClick={() => fileRef.current?.click()} disabled={uploading || !!image} title="Add image">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: "none" }} />
           <span className={styles.charCount}>{text.length > 0 && `${text.length}/500`}</span>
-          <button className={`btn btn-primary ${styles.postBtn}`} onClick={handleSubmit} disabled={(!text.trim() && !image) || posting || uploading}>
-            {posting ? "Posting…" : uploading ? "Uploading…" : "Post"}
-          </button>
+          <div className={styles.footerRight} style={{ position: "relative" }}>
+            {/* Image upload */}
+            <button className={styles.imageBtn} onClick={() => fileRef.current?.click()} disabled={uploading || !!image} title="Add image">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+              </svg>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: "none" }} />
+
+            {/* GIF button */}
+            <button ref={gifBtnRef} className={styles.gifBtn} onClick={() => setShowGifs(!showGifs)} disabled={!!image} title="Add GIF">
+              <span className={styles.gifLabel}>GIF</span>
+            </button>
+
+            {showGifs && <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifs(false)} anchorRef={gifBtnRef} />}
+
+            <button className={`btn btn-primary ${styles.postBtn}`} onClick={handleSubmit} disabled={(!text.trim() && !image) || posting || uploading}>
+              {posting ? "Posting…" : uploading ? "Uploading…" : "Post"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

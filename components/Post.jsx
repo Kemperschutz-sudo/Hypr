@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, deleteDoc, onSnapshot, arrayUnion, arrayRemove, collection, query, where, getDocs } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
+import { sendNotification } from "@/lib/notifications";
 import styles from "./Post.module.css";
 
 function PostContent({ content }) {
@@ -41,15 +42,6 @@ function PostContent({ content }) {
         return part;
       })}
     </p>
-  );
-}
-
-function VerifiedBadge() {
-  return (
-    <svg className={styles.verifiedBadge} width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="12" fill="#6366f1" />
-      <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 
@@ -103,8 +95,18 @@ export default function Post({ post, currentUser }) {
 
   const toggleLike = async () => {
     const ref = doc(db, "posts", post.id);
-    if (liked) await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-    else await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+    if (liked) {
+      await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+    } else {
+      await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+      sendNotification({
+        toUid: post.authorId,
+        fromUid: currentUser.uid,
+        type: "like",
+        postId: post.id,
+        preview: post.content?.slice(0, 80) || null,
+      });
+    }
   };
 
   const handleDelete = async () => {
@@ -154,7 +156,7 @@ export default function Post({ post, currentUser }) {
         <div className={styles.header}>
           <Link href={`/profile/${post.authorId}`} className={styles.avatar} onClick={(e) => e.stopPropagation()}>
             {authorData.photo ? (
-              <img src={authorData.photo} alt={authorData.name} className={styles.avatarImg} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+              <img src={authorData.photo} alt={authorData.name} className={styles.avatarImg} style={{ width: 40, height: 40 }} />
             ) : (
               <div className={styles.avatarFallback}>{authorData.name?.[0]?.toUpperCase() ?? "?"}</div>
             )}
@@ -164,7 +166,12 @@ export default function Post({ post, currentUser }) {
               <Link href={`/profile/${post.authorId}`} className={styles.author} onClick={(e) => e.stopPropagation()}>
                 @{authorData.name}
               </Link>
-              {authorData.verified && <VerifiedBadge />}
+              {authorData.verified && (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={styles.verifiedBadge}>
+                  <circle cx="12" cy="12" r="12" fill="#6366f1" />
+                  <path d="M7 13l3 3 7-7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </span>
             <span className={styles.time}>{createdAt}{post.edited && " · edited"}</span>
           </div>
@@ -172,10 +179,19 @@ export default function Post({ post, currentUser }) {
 
         {editing ? (
           <div className={styles.editBox} onClick={(e) => e.stopPropagation()}>
-            <textarea className={styles.editTextarea} value={editText} onChange={(e) => setEditText(e.target.value)} rows={3} maxLength={500} autoFocus />
+            <textarea
+              className={styles.editTextarea}
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows={3}
+              maxLength={500}
+              autoFocus
+            />
             <div className={styles.editActions}>
               <button className="btn btn-ghost" onClick={() => setEditing(false)} style={{ fontSize: 13, padding: "6px 14px" }}>Cancel</button>
-              <button className="btn btn-primary" onClick={saveEdit} disabled={saving} style={{ fontSize: 13, padding: "6px 14px" }}>{saving ? "Saving…" : "Save"}</button>
+              <button className="btn btn-primary" onClick={saveEdit} disabled={saving} style={{ fontSize: 13, padding: "6px 14px" }}>
+                {saving ? "Saving…" : "Save"}
+              </button>
             </div>
           </div>
         ) : (
@@ -204,7 +220,12 @@ export default function Post({ post, currentUser }) {
       </div>
 
       {contextMenu && isOwn && (
-        <div ref={menuRef} className={styles.contextMenu} style={{ top: contextMenu.y, left: contextMenu.x }} onClick={(e) => e.stopPropagation()}>
+        <div
+          ref={menuRef}
+          className={styles.contextMenu}
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <button className={styles.menuItem} onClick={handleEdit}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
 import { formatDistanceToNow } from "date-fns";
+import { sendNotification } from "@/lib/notifications";
 import styles from "./post.module.css";
 
 const CLOUD_NAME = "drxpnwzsm";
@@ -31,7 +32,6 @@ function MentionText({ content }) {
   );
 }
 
-// Avatar that loads from users collection in real-time
 function UserAvatar({ uid, fallbackName, fallbackPhoto, size = 36 }) {
   const [photo, setPhoto] = useState(fallbackPhoto || null);
   const [name, setName] = useState(fallbackName || "");
@@ -49,7 +49,6 @@ function UserAvatar({ uid, fallbackName, fallbackPhoto, size = 36 }) {
   }, [uid]);
 
   const fallbackClass = size >= 48 ? styles.avatarFallback : styles.avatarFallbackSm;
-
   return photo ? (
     <img src={photo} alt={name} className={styles.avatarImg} style={{ width: size, height: size }} />
   ) : (
@@ -111,8 +110,12 @@ export default function PostPage() {
     if (!currentUser || !post) return;
     const ref = doc(db, "posts", post.id);
     const liked = post.likes?.includes(currentUser.uid);
-    if (liked) await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-    else await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+    if (liked) {
+      await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+    } else {
+      await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+      sendNotification({ toUid: post.authorId, fromUid: currentUser.uid, type: "like", postId: post.id, preview: post.content?.slice(0, 80) });
+    }
   };
 
   const handleImageSelect = async (e) => {
@@ -155,6 +158,23 @@ export default function PostPage() {
         createdAt: serverTimestamp(),
         likes: [],
       });
+
+      // Send reply notification to post author
+      if (post) {
+        sendNotification({ toUid: post.authorId, fromUid: currentUser.uid, type: "reply", postId: id, preview: content?.slice(0, 80) });
+      }
+
+      // Send mention notifications
+      const mentions = [...(content || "").matchAll(/@([a-z0-9_]+)/gi)].map(m => m[1].toLowerCase());
+      for (const mention of [...new Set(mentions)]) {
+        const { getDocs, query: q2, collection: col, where: wh } = await import("firebase/firestore");
+        const snap = await getDocs(q2(col(db, "usernames"), wh("__name__", "==", mention)));
+        if (!snap.empty) {
+          const mentionedUid = snap.docs[0].data().uid;
+          sendNotification({ toUid: mentionedUid, fromUid: currentUser.uid, type: "mention", postId: id, preview: content?.slice(0, 80) });
+        }
+      }
+
       setReplyText("");
       setReplyImage(null);
       setReplyImagePreview(null);
@@ -188,7 +208,6 @@ export default function PostPage() {
             Back
           </button>
 
-          {/* Main post */}
           <div className={styles.mainPost}>
             <div className={styles.postHeader}>
               <Link href={`/profile/${post.authorId}`} className={styles.avatar}>
@@ -216,7 +235,6 @@ export default function PostPage() {
             </div>
           </div>
 
-          {/* Reply box */}
           {currentUser && (
             <div className={styles.replyBox}>
               <div className={styles.replyAvatar}>
@@ -260,7 +278,6 @@ export default function PostPage() {
             </div>
           )}
 
-          {/* Replies */}
           <div className={styles.replies}>
             {replies.length === 0 ? (
               <p className={styles.empty}>No replies yet — be the first!</p>
