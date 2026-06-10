@@ -79,7 +79,7 @@ export default function GifPicker({ onSelect, onClose, anchorRef }) {
         {loading && <p className={styles.loading}>Loading…</p>}
         {!loading && gifs.length === 0 && <p className={styles.loading}>No GIFs found</p>}
         {gifs.map((gif) => (
-          <button key={gif.id} className={styles.gifBtn} onClick={() => onSelect(gif.images.fixed_height.url)}>
+          <button key={gif.id} className={styles.gifBtn} onClick={() => onSelect(gif.images.original.url)}>
             <img src={gif.images.fixed_height_small.url} alt={gif.title} className={styles.gif} loading="lazy" />
           </button>
         ))}
