@@ -1,4 +1,4 @@
-# SocialApp
+# Hypr
 
 A simple social media web app built with Next.js + Firebase. Features: posts, real-time likes, and user profiles.
 
