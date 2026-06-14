@@ -25,17 +25,29 @@
 .catBtn {
   background: transparent;
   border: none;
-  font-size: 18px;
   padding: 6px 8px;
   border-radius: 6px;
   cursor: pointer;
-  opacity: 0.5;
+  color: var(--text-muted);
+  opacity: 0.6;
   transition: all 0.1s;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.catBtn:hover { opacity: 1; background: var(--surface-hover); }
-.catActive { opacity: 1; background: var(--surface-hover); }
+.catBtn:hover {
+  opacity: 1;
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.catActive {
+  opacity: 1;
+  background: var(--surface-hover);
+  color: var(--text);
+}
 
 .grid {
   display: grid;
@@ -73,3 +85,13 @@
 }
 
 .emojiBtn:hover { background: var(--surface-hover); }
+
+.tooltip {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  text-align: center;
+  min-height: 28px;
+}
