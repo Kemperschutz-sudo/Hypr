@@ -1,7 +1,7 @@
 "use client";
 // app/hashtag/page.jsx
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -10,7 +10,7 @@ import Navbar from "@/components/Navbar";
 import Post from "@/components/Post";
 import styles from "./hashtag.module.css";
 
-export default function HashtagPage() {
+function HashtagContent() {
   const searchParams = useSearchParams();
   const tag = searchParams.get("tag") || "";
   const [currentUser, setCurrentUser] = useState(null);
@@ -61,5 +61,13 @@ export default function HashtagPage() {
         </div>
       </main>
     </>
+  );
+}
+
+export default function HashtagPage() {
+  return (
+    <Suspense>
+      <HashtagContent />
+    </Suspense>
   );
 }
