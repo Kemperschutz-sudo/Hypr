@@ -43,13 +43,17 @@ export default function PostPage() {
   const [replyImagePreview, setReplyImagePreview] = useState(null);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authorPhotos, setAuthorPhotos] = useState({});
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
       setCurrentUser(u);
       if (u) {
         const snap = await getDoc(doc(db, "users", u.uid));
-        if (snap.exists() && snap.data().username) setUsername(snap.data().username);
+        if (snap.exists()) {
+          if (snap.data().username) setUsername(snap.data().username);
+          if (snap.data().photoURL) setUserPhoto(snap.data().photoURL);
+        }
       }
     });
   }, []);
@@ -80,6 +84,19 @@ export default function PostPage() {
     });
     return unsub;
   }, [id]);
+
+  // Fetch current profile pictures for reply authors
+  useEffect(() => {
+    if (replies.length === 0) return;
+    const uniqueIds = [...new Set(replies.map((r) => r.authorId).filter(Boolean))];
+    Promise.all(
+      uniqueIds.map((uid) => getDoc(doc(db, "users", uid)).then((snap) => ({ uid, photo: snap.data()?.photoURL || null })))
+    ).then((results) => {
+      const map = {};
+      results.forEach(({ uid, photo }) => { if (photo) map[uid] = photo; });
+      setAuthorPhotos(map);
+    });
+  }, [replies]);
 
   const toggleLike = async () => {
     if (!currentUser || !post) return;
@@ -185,8 +202,8 @@ export default function PostPage() {
           {currentUser && (
             <div className={styles.replyBox}>
               <div className={styles.replyAvatar}>
-                {currentUser.photoURL ? (
-                  <Image src={currentUser.photoURL} alt={username} width={36} height={36} className={styles.avatarImg} />
+                {(userPhoto || currentUser.photoURL) ? (
+                  <Image src={userPhoto || currentUser.photoURL} alt={username} width={36} height={36} className={styles.avatarImg} />
                 ) : (
                   <div className={styles.avatarFallbackSm}>{username?.[0] ?? "?"}</div>
                 )}
@@ -226,8 +243,8 @@ export default function PostPage() {
                 return (
                   <div key={reply.id} className={styles.reply}>
                     <Link href={`/profile/${reply.authorId}`} className={styles.avatar}>
-                      {reply.authorPhoto ? (
-                        <Image src={reply.authorPhoto} alt={reply.authorName} width={36} height={36} className={styles.avatarImg} />
+                      {(authorPhotos[reply.authorId] || reply.authorPhoto) ? (
+                        <Image src={authorPhotos[reply.authorId] || reply.authorPhoto} alt={reply.authorName} width={36} height={36} className={styles.avatarImg} />
                       ) : (
                         <div className={styles.avatarFallbackSm}>{reply.authorName?.[0] ?? "?"}</div>
                       )}

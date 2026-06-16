@@ -21,8 +21,11 @@ export default function SettingsPage() {
   const [bio, setBio] = useState("");
   const [bioInput, setBioInput] = useState("");
   const [darkMode, setDarkMode] = useState(true);
+  const [savedDarkMode, setSavedDarkMode] = useState(true);
   const [showOnline, setShowOnline] = useState(true);
+  const [savedShowOnline, setSavedShowOnline] = useState(true);
   const [customPhoto, setCustomPhoto] = useState(null);
+  const [savedPhoto, setSavedPhoto] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -37,12 +40,13 @@ export default function SettingsPage() {
         const data = snap.data();
         if (data.username) { setUsername(data.username); setUsernameInput(data.username); }
         if (data.bio) { setBio(data.bio); setBioInput(data.bio); }
-        if (data.photoURL) setCustomPhoto(data.photoURL);
+        if (data.photoURL) { setCustomPhoto(data.photoURL); setSavedPhoto(data.photoURL); }
         if (data.darkMode !== undefined) {
           setDarkMode(data.darkMode);
+          setSavedDarkMode(data.darkMode);
           document.documentElement.setAttribute("data-theme", data.darkMode ? "dark" : "light");
         }
-        if (data.showOnline !== undefined) setShowOnline(data.showOnline);
+        if (data.showOnline !== undefined) { setShowOnline(data.showOnline); setSavedShowOnline(data.showOnline); }
       }
       setLoading(false);
     });
@@ -97,6 +101,10 @@ export default function SettingsPage() {
         lastSeen: serverTimestamp(),
         ...(customPhoto ? { photoURL: customPhoto } : {}),
       }, { merge: true });
+      setBio(bioInput.trim());
+      setSavedPhoto(customPhoto);
+      setSavedDarkMode(darkMode);
+      setSavedShowOnline(showOnline);
       setSaveMsg("Saved!");
       setTimeout(() => setSaveMsg(""), 2500);
     } catch (err) {
@@ -106,6 +114,13 @@ export default function SettingsPage() {
       setSaving(false);
     }
   };
+
+  const hasChanges =
+    usernameInput.trim().toLowerCase().replace(/\s+/g, "_") !== username ||
+    bioInput.trim() !== bio ||
+    customPhoto !== savedPhoto ||
+    darkMode !== savedDarkMode ||
+    showOnline !== savedShowOnline;
 
   if (loading) return <div className={styles.loading}><div className={styles.spinner} /></div>;
 
@@ -221,8 +236,12 @@ export default function SettingsPage() {
 
           <div className={styles.saveBar}>
             {saveMsg && <span className={`${styles.saveMsg} ${saveMsg === "Saved!" ? styles.saveMsgSuccess : styles.saveMsgError}`}>{saveMsg}</span>}
-            <button className={`btn btn-primary ${styles.saveBtn}`} onClick={handleSave} disabled={saving}>
-              {saving ? "Saving…" : "Save changes"}
+            <button
+              className={`btn btn-primary ${styles.saveBtn} ${!hasChanges && !saving ? styles.saveBtnIdle : ""}`}
+              onClick={handleSave}
+              disabled={saving || !hasChanges}
+            >
+              {saving ? "Saving…" : hasChanges ? "Save changes" : "No changes made"}
             </button>
           </div>
         </div>

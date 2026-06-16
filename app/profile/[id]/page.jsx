@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
 import Post from "@/components/Post";
+import FollowListModal from "@/components/FollowListModal";
 import { sendNotification } from "@/lib/notifications";
 import styles from "./profile.module.css";
 
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(true);
   const [followLoading, setFollowLoading] = useState(false);
+  const [modalType, setModalType] = useState(null);
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
@@ -69,6 +71,12 @@ export default function ProfilePage() {
     });
     return unsub;
   }, [id, currentUser]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") setModalType(null); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   const isOwn = currentUser?.uid === id;
   const isFollowing = currentUser ? followers.includes(currentUser.uid) : false;
@@ -132,8 +140,12 @@ export default function ProfilePage() {
                 {profileData?.bio && <p className={styles.bio}>{profileData.bio}</p>}
                 <div className={styles.stats}>
                   <span><strong>{posts.length}</strong> post{posts.length !== 1 ? "s" : ""}</span>
-                  <span><strong>{followers.length}</strong> follower{followers.length !== 1 ? "s" : ""}</span>
-                  <span><strong>{following.length}</strong> following</span>
+                  <button className={styles.statBtn} onClick={() => setModalType("followers")}>
+                    <strong>{followers.length}</strong> follower{followers.length !== 1 ? "s" : ""}
+                  </button>
+                  <button className={styles.statBtn} onClick={() => setModalType("following")}>
+                    <strong>{following.length}</strong> following
+                  </button>
                 </div>
               </div>
               {!isOwn && currentUser && (
@@ -154,6 +166,15 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      {modalType && (
+        <FollowListModal
+          type={modalType}
+          uids={modalType === "followers" ? followers : following}
+          currentUser={currentUser}
+          onClose={() => setModalType(null)}
+        />
+      )}
     </>
   );
 }
