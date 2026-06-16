@@ -11,9 +11,10 @@
 .verifiedBadge { flex-shrink: 0; display: block; position: relative; top: 0; }
 .devBadge { flex-shrink: 0; display: block; position: relative; top: 0; }
 .bio { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
-.stats { display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); margin-top: 6px; align-items: center; flex-wrap: wrap; }
+.stats { display: flex; gap: 14px; font-size: 13px; color: var(--text-muted); margin-top: 6px; align-items: center; flex-wrap: nowrap; }
 .stats strong { color: var(--text); font-weight: 600; }
-.statBtn { background: none; border: none; padding: 0; font: inherit; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: color 0.15s; }
+.stats span, .statBtn { white-space: nowrap; }
+.statBtn { background: none; border: none; padding: 0; font: inherit; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: color 0.15s; white-space: nowrap; }
 .statBtn:hover { color: var(--text); }
 .followBtn { background: var(--accent); color: white; padding: 8px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; margin-left: auto; flex-shrink: 0; }
 .followBtn:hover { background: var(--accent-hover); }
@@ -22,6 +23,17 @@
 .badge { margin-left: auto; background: rgba(99, 102, 241, 0.12); color: var(--accent); font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.25); flex-shrink: 0; }
 .posts { display: flex; flex-direction: column; gap: 1px; }
 .empty { text-align: center; padding: 48px 0; color: var(--text-faint); font-size: 15px; }
+
+@media (max-width: 480px) {
+  .profileCard { padding: 16px; }
+  .profileTop { flex-wrap: wrap; gap: 12px; }
+  .avatar { width: 56px; height: 56px; }
+  .avatarFallback { width: 56px; height: 56px; font-size: 22px; }
+  .name { font-size: 18px; }
+  .stats { gap: 10px; font-size: 12px; }
+  .followBtn, .unfollowBtn { margin-left: 0; }
+  .badge { margin-left: 0; }
+}
 
 .avatarWrapper {
   position: relative;

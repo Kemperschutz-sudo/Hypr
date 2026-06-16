@@ -12,6 +12,15 @@
   overflow: hidden;
 }
 
+@media (max-width: 480px) {
+  .picker {
+    left: 8px !important;
+    right: 8px !important;
+    width: calc(100vw - 16px) !important;
+    max-height: 60vh;
+  }
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -49,7 +58,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
+  gap: 6px;
   padding: 8px;
   max-height: 280px;
   overflow-y: auto;

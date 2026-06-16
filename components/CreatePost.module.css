@@ -64,12 +64,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .footerRight {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .charCount {
@@ -152,15 +154,15 @@
   position: relative;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  max-height: 300px;
 }
 
 .previewImg {
   width: 100%;
   max-height: 300px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: var(--radius-sm);
   display: block;
+  background: var(--bg);
 }
 
 .uploadingOverlay {
