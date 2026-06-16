@@ -1,7 +1,7 @@
 "use client";
 // app/page.jsx — Main feed
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, db, googleProvider } from "@/lib/firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import {
@@ -28,6 +28,56 @@ export default function Home() {
 
   const [banned, setBanned] = useState(null);
   const [userCount, setUserCount] = useState(null);
+
+  // Pull-to-refresh
+  const [pullDistance, setPullDistance] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const touchStartY = useRef(0);
+  const isPulling = useRef(false);
+  const pullDistanceRef = useRef(0);
+  const PULL_THRESHOLD = 72;
+
+  useEffect(() => {
+    const onTouchStart = (e) => {
+      if (window.scrollY === 0) {
+        touchStartY.current = e.touches[0].clientY;
+        isPulling.current = true;
+      }
+    };
+    const onTouchMove = (e) => {
+      if (!isPulling.current) return;
+      const dy = e.touches[0].clientY - touchStartY.current;
+      if (dy > 0) {
+        const clamped = Math.min(dy * 0.4, PULL_THRESHOLD);
+        pullDistanceRef.current = clamped;
+        setPullDistance(clamped);
+      } else {
+        isPulling.current = false;
+        pullDistanceRef.current = 0;
+        setPullDistance(0);
+      }
+    };
+    const onTouchEnd = () => {
+      if (!isPulling.current) return;
+      isPulling.current = false;
+      if (pullDistanceRef.current >= PULL_THRESHOLD * 0.85) {
+        setRefreshing(true);
+        setPullDistance(PULL_THRESHOLD);
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        pullDistanceRef.current = 0;
+        setPullDistance(0);
+      }
+    };
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
 
   // Load user count for landing page
   useEffect(() => {
@@ -252,6 +302,17 @@ export default function Home() {
 
   return (
     <>
+      {(pullDistance > 0 || refreshing) && (
+        <div
+          className={styles.pullIndicator}
+          style={{
+            transform: `translateX(-50%) translateY(${(refreshing ? PULL_THRESHOLD : pullDistance) - PULL_THRESHOLD}px)`,
+            opacity: refreshing ? 1 : pullDistance / PULL_THRESHOLD,
+          }}
+        >
+          <div className={`${styles.pullSpinner} ${refreshing ? styles.pullSpinnerActive : ""}`} />
+        </div>
+      )}
       <Navbar user={user} username={username} onLogout={handleLogout} onUsernameChange={setUsername} />
       <main className={styles.main}>
         <div className="container">
