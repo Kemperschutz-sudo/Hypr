@@ -26,8 +26,19 @@ export default function RootLayout({ children }) {
             e.preventDefault();
           });
           if ('serviceWorker' in navigator) {
+            var reloading = false;
             navigator.serviceWorker.addEventListener('controllerchange', function() {
-              window.location.reload();
+              if (!reloading) { reloading = true; window.location.reload(); }
+            });
+            navigator.serviceWorker.ready.then(function(reg) {
+              reg.addEventListener('updatefound', function() {
+                var newSW = reg.installing;
+                newSW.addEventListener('statechange', function() {
+                  if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                    newSW.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              });
             });
           }
         `}} />
