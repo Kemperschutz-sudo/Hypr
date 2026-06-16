@@ -3,6 +3,8 @@ const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
   skipWaiting: true,
+  cleanupOutdatedCaches: true,
+  reloadOnOnline: true,
   disable: process.env.NODE_ENV === "development",
   runtimeCaching: [
     {

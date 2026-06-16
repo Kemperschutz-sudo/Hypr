@@ -25,6 +25,11 @@ export default function RootLayout({ children }) {
             }
             e.preventDefault();
           });
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+              window.location.reload();
+            });
+          }
         `}} />
         {children}
       </body>
